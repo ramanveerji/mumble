@@ -3466,7 +3466,7 @@ Ohne diese Option funktioniert die Verwendung der globalen Tastaturkürzel von M
     </message>
     <message>
         <source>Remove</source>
-        <translation>Löschen</translation>
+        <translation>Entfernen</translation>
     </message>
 </context>
 <context>
@@ -7382,7 +7382,7 @@ Um diese Dateien zu aktualisieren, klicken Sie unten den Button.</translation>
     </message>
     <message>
         <source>This rescans and reloads plugins. Use this if you just added or changed a plugin to the plugins directory.</source>
-        <translation>Dies liest alle Plugins neu ein. Benutzen Sie dies, falls Sie dem Pluginverzeichnis ein Plugin hinzugefügt, oder ein Plugin geändert haben.</translation>
+        <translation>Dies liest alle Plugins neu ein. Benutzen Sie dies, falls Sie dem Plugin-Verzeichnis ein Plugin hinzugefügt, oder ein Plugin geändert haben.</translation>
     </message>
     <message>
         <source>&amp;Reload plugins</source>
@@ -7572,7 +7572,7 @@ Um diese Dateien zu aktualisieren, klicken Sie unten den Button.</translation>
     </message>
     <message>
         <source>Non-plugin found in plugin directory: &quot;%1&quot; (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Nicht-Plugin im Plugin-Verzeichnis gefunden: „%1“ (%2)</translation>
     </message>
 </context>
 <context>
@@ -8937,38 +8937,38 @@ Ein Zugriffscode ist eine Zeichenfolge, die als Passwort für ein sehr einfaches
     <name>VoiceRecorder</name>
     <message>
         <source>Recorder failed to create directory &apos;%1&apos;</source>
-        <translation>Recorder konnte Verzeichnis &apos;%1&apos; nicht erstellen</translation>
+        <translation>Rekorder konnte Verzeichnis „%1“ nicht erstellen</translation>
     </message>
     <message>
         <source>Recorder failed to open file &apos;%1&apos;</source>
-        <translation>Datei &apos;%1&apos; konnte für die Aufnahme nicht geöffnet werden</translation>
+        <translation>Rekorder konnte Datei „%1“ nicht öffnen</translation>
     </message>
     <message>
         <source>.wav - Uncompressed</source>
-        <translation>.wav - Unkomprimiert</translation>
+        <translation>.wav – Unkomprimiert</translation>
     </message>
     <message>
         <source>.ogg (Vorbis) - Compressed</source>
-        <translation>.ogg (Vorbis) - Komprimiert</translation>
+        <translation>.ogg (Vorbis) – Komprimiert</translation>
     </message>
     <message>
         <source>.au - Uncompressed</source>
-        <translation>.au - Unkomprimiert</translation>
+        <translation>.au – Unkomprimiert</translation>
     </message>
     <message>
         <source>.flac - Lossless compressed</source>
-        <translation>.flac - Verlustfrei komprimiert</translation>
+        <translation>.flac – Verlustfrei komprimiert</translation>
     </message>
     <message>
         <source>.opus - Lossy compressed</source>
-        <translation>.opus - Verlustbehaftet komprimiert</translation>
+        <translation>.opus – Verlustbehaftet komprimiert</translation>
     </message>
 </context>
 <context>
     <name>VoiceRecorderDialog</name>
     <message>
         <source>Recorder</source>
-        <translation>Aufnahme</translation>
+        <translation>Rekorder</translation>
     </message>
     <message>
         <source>Control</source>
@@ -9036,11 +9036,11 @@ Ein Zugriffscode ist eine Zeichenfolge, die als Passwort für ein sehr einfaches
     </message>
     <message>
         <source>Recorder still running</source>
-        <translation>Aufnahme aktiv</translation>
+        <translation>Rekorder läuft noch</translation>
     </message>
     <message>
         <source>Closing the recorder without stopping it will discard unwritten audio. Do you really want to close the recorder?</source>
-        <translation>Das Schließen des Aufnahme-Fensters führt dazu, dass die aufgezeichnete Audio-Sequenz nicht gespeichert wird. Möchtest du die Aufnahme wirklich beenden?</translation>
+        <translation>Das Schließen des Rekorders ohne zu speichern wird die aktuelle Audio-Sequenz verwerfen. Möchtest du den Rekorder wirklich schließen?</translation>
     </message>
     <message>
         <source>Unable to start recording. Not connected to a server.</source>
