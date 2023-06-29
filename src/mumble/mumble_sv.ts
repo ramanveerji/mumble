@@ -6543,13 +6543,13 @@ Giltiga värden för options är:
                 Sätt en annan ändelse för fönstertiteln.
   --dump-input-streams
                 Dumpa PCM-strömmar vid diverse delar av input-kedjan.
-                (användbart vid debugging)
+                (användbart vid avlusning)
                 - rå mikrofoninput
                 - högtalardata för ekoreducering
                 - bearbetad mikrofoninput
   --print-echocancel-queue
                 Skriv läget för ekoreduceringkön till stdout
-                (användbart för debugging)
+                (användbart för avlusning)
   --translation-dir &lt;dir&gt;
                 Sätter en till översättningsmapp, &lt;dir&gt;
                 som Mumble kommer leta efter översättningsfiler i
@@ -7578,7 +7578,7 @@ Tryck på knappen nedan för att uppgradera dessa filer till de senaste versione
     </message>
     <message>
         <source>Non-plugin found in plugin directory: &quot;%1&quot; (%2)</source>
-        <translation type="unfinished"></translation>
+        <translation>Icke-plugin hittades i plugin-katalogen: &quot;%1&quot; (%2)</translation>
     </message>
 </context>
 <context>
