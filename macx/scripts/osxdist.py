@@ -49,7 +49,7 @@ def lookup_file_identifier(path):
 def codesign(path):
 	'''Call the codesign executable on the signable object at path.'''
 
-	certname = 'Developer ID Application: %s' % options.developer_id
+	certname = f'Developer ID Application: {options.developer_id}'
 	OU = certificate_subject_OU(certname)
 
 	if hasattr(path, 'isalpha'):
@@ -63,7 +63,20 @@ def codesign(path):
 				'identifier': identifier,
 				'subject_OU': OU,
 			})
-		p = Popen(('codesign', '--keychain', options.keychain, '-vvvv', '-i', identifier, '-r='+reqs, '-s', certname, p))
+		p = Popen(
+			(
+				'codesign',
+				'--keychain',
+				options.keychain,
+				'-vvvv',
+				'-i',
+				identifier,
+				f'-r={reqs}',
+				'-s',
+				certname,
+				p,
+			)
+		)
 		retval = p.wait()
 		if retval != 0:
 			return retval
@@ -72,12 +85,10 @@ def codesign(path):
 def prodsign(inf, outf):
 	'''Call the prodsign executable.'''
 
-	certname = 'Developer ID Installer: %s' % options.developer_id
+	certname = f'Developer ID Installer: {options.developer_id}'
 	p = Popen(('productsign', '--keychain', options.keychain, '--sign', certname, inf, outf))
 	retval = p.wait()
-	if retval != 0:
-		return retval
-	return 0
+	return retval if retval != 0 else 0
 
 def create_overlay_package():
 	print('* Creating overlay installer')
@@ -105,7 +116,7 @@ class AppBundle(object):
 			Copy a helper binary into the Mumble app bundle.
 		'''
 		if os.path.exists(os.path.join(self.bundle, '..', fn)):
-			print(' * Copying helper binary: %s' % fn)
+			print(f' * Copying helper binary: {fn}')
 			src = os.path.join(self.bundle, '..', fn)
 			dst = os.path.join(self.bundle, 'Contents', 'MacOS', fn)
 			shutil.copy(src, dst)
@@ -168,7 +179,7 @@ class AppBundle(object):
 		'''
 			Set the minimum version of Mac OS X version that this App will run on.
 		'''
-		print(' * Setting minimum Mac OS X version to: %s' % (version))
+		print(f' * Setting minimum Mac OS X version to: {version}')
 		self.infoplist['LSMinimumSystemVersion'] = version
 
 	def done(self):
@@ -206,15 +217,15 @@ class FolderObject(object):
 
 		# Determine destination
 		if dst[-1] == '/':
-			adst = os.path.abspath(self.tmp + '/' + dst + os.path.basename(src))
+			adst = os.path.abspath(f'{self.tmp}/{dst}{os.path.basename(src)}')
 		else:
-			adst = os.path.abspath(self.tmp + '/' + dst)
+			adst = os.path.abspath(f'{self.tmp}/{dst}')
 
 		if os.path.isdir(asrc):
-			print(' * Copying directory: %s' % os.path.basename(asrc))
+			print(f' * Copying directory: {os.path.basename(asrc)}')
 			shutil.copytree(asrc, adst, symlinks=True)
 		elif os.path.isfile(asrc):
-			print(' * Copying file: %s' % os.path.basename(asrc))
+			print(f' * Copying file: {os.path.basename(asrc)}')
 			shutil.copy(asrc, adst)
 
 	def symlink(self, src, dst):
@@ -222,16 +233,16 @@ class FolderObject(object):
 			Create a symlink inside the folder.
 		'''
 		asrc = os.path.abspath(src)
-		adst = self.tmp + '/' + dst
-		print(' * Creating symlink %s' % os.path.basename(asrc))
+		adst = f'{self.tmp}/{dst}'
+		print(f' * Creating symlink {os.path.basename(asrc)}')
 		os.symlink(asrc, adst)
 
 	def mkdir(self, name):
 		'''
 			Create a directory inside the folder.
 		'''
-		print(' * Creating directory %s' % os.path.basename(name))
-		adst = self.tmp + '/'  + name
+		print(f' * Creating directory {os.path.basename(name)}')
+		adst = f'{self.tmp}/{name}'
 		os.makedirs(adst)
 
 
@@ -263,16 +274,13 @@ class DiskImage(FolderObject):
 		print(' * Done!')
 
 def package_client():
-	if options.version is not None:
-		ver = options.version
-	else:
-		ver = gitrev()
+	ver = options.version if options.version is not None else gitrev()
 	if options.universal:
 		fn = os.path.join(options.binary_dir, 'Mumble-Universal-%s.dmg') % ver
-		title = 'Mumble %s (Universal)' % ver
+		title = f'Mumble {ver} (Universal)'
 	else:
 		fn = os.path.join(options.binary_dir, 'Mumble-%s.dmg') % ver
-		title = 'Mumble %s' % ver
+		title = f'Mumble {ver}'
 
 	# Fix overlay installer package
 	create_overlay_package()
@@ -318,12 +326,8 @@ def package_client():
 	d.create()
 
 def package_server():
-	if options.version is not None:
-		ver = options.version
-	else:
-		ver = gitrev()
-
-	name = 'Murmur-OSX-Static-%s' % ver
+	ver = options.version if options.version is not None else gitrev()
+	name = f'Murmur-OSX-Static-{ver}'
 
 	# Fix .ini files
 	p = Popen(('bash', 'mkini.sh'), cwd=os.path.join(options.source_dir, 'scripts'))
@@ -349,8 +353,19 @@ def package_server():
 	shutil.copy(os.path.join(options.binary_dir, 'murmurd'), os.path.join(destdir, 'murmurd'))
 	codesign(os.path.join(destdir, 'murmurd'))
 
-	certname = 'Developer ID Installer: %s' % options.developer_id
-	p = Popen(('xip', '--keychain', options.keychain, '-s', certname, '--timestamp', destdir, os.path.join(options.binary_dir, name+'.xip')))
+	certname = f'Developer ID Installer: {options.developer_id}'
+	p = Popen(
+		(
+			'xip',
+			'--keychain',
+			options.keychain,
+			'-s',
+			certname,
+			'--timestamp',
+			destdir,
+			os.path.join(options.binary_dir, f'{name}.xip'),
+		)
+	)
 	retval = p.wait()
 	if retval != 0:
 		print('Failed to build Murmur XIP package')
@@ -358,13 +373,25 @@ def package_server():
 
 	absrelease = os.path.join(os.getcwd(), 'options.binary_dir')
 
-	p = Popen(('tar', '-cjpf', name+'.tar.bz2', name), cwd=absrelease)
+	p = Popen(('tar', '-cjpf', f'{name}.tar.bz2', name), cwd=absrelease)
 	retval = p.wait()
 	if retval != 0:
 		print('Failed to build Murmur tar.bz2 package')
 		sys.exit(1)
 
-	p = Popen(('gpg', '--detach-sign', '--armor', '-u', options.developer_id, '-o', name+'.tar.bz2.sig', name+'.tar.bz2'), cwd=absrelease)
+	p = Popen(
+		(
+			'gpg',
+			'--detach-sign',
+			'--armor',
+			'-u',
+			options.developer_id,
+			'-o',
+			f'{name}.tar.bz2.sig',
+			f'{name}.tar.bz2',
+		),
+		cwd=absrelease,
+	)
 	retval = p.wait()
 	if retval != 0:
 		print('Failed to sign Murmur tar.bz2 package')

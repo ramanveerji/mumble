@@ -53,10 +53,10 @@ def main():
         pos = 0
         match = pattern.search(content, pos)
 
-        while not match is None:
-            optionName = match.group(1)
-            optionDescription = match.group(2)
-            optionDefault = match.group(3)
+        while match is not None:
+            optionName = match[1]
+            optionDescription = match[2]
+            optionDefault = match[3]
 
             options.append(CmakeOption(optionName, optionDescription, optionDefault))
 
@@ -69,8 +69,7 @@ def main():
     options.sort()
 
 
-    generatedContent = "# CMake options\n"
-    generatedContent += "\n"
+    generatedContent = "# CMake options\n" + "\n"
     generatedContent += "Using CMake the build can be customized in a number of ways. The most prominent examples for this is the usage of different\n"
     generatedContent += "options (flags). These can be set by using `-D<optionName>=<value>` where `<optionName>` is the name of the respective option\n"
     generatedContent += "as listed below and `<value>` is either `ON` or `OFF` depending on whether the option shall be activated or inactivated.\n"
@@ -82,7 +81,7 @@ def main():
     generatedContent += "\n"
 
     for currentOption in options:
-        generatedContent += "### " + currentOption.m_name + "\n"
+        generatedContent += f"### {currentOption.m_name}" + "\n"
         generatedContent += "\n"
         desc = currentOption.m_description
 
@@ -90,7 +89,7 @@ def main():
             desc = "(No description available)"
 
         generatedContent += desc + "\n"
-        generatedContent += "(Default: " + currentOption.m_defaultValue + ")\n"
+        generatedContent += f"(Default: {currentOption.m_defaultValue}" + ")\n"
         generatedContent += "\n"
 
 

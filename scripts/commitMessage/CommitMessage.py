@@ -26,9 +26,9 @@ class CommitMessage:
         if not match:
             raise CommitFormatError("The provided commit's subject line does not follow the required pattern")
 
-        types = match.group(1).split("/") if not match.group(1) is None else []
-        scopes = match.group(2).split(",") if not match.group(2) is None else []
-        summary = match.group(3).strip() if not match.group(3) is None else ""
+        types = match[1].split("/") if match[1] is not None else []
+        scopes = match[2].split(",") if match[2] is not None else []
+        summary = match[3].strip() if match[3] is not None else ""
 
         if len(types) == 0:
             raise CommitFormatError("Missing type")
@@ -45,7 +45,7 @@ class CommitMessage:
             if currentType == "":
                 raise CommitFormatError("Subsequent \"/\" not allowed for separating types")
 
-            if not currentType in self.knownTypes:
+            if currentType not in self.knownTypes:
                 raise CommitFormatError("Unknown type \"%s\" (or incorrect spelling)" % currentType)
 
         self.m_types = types
@@ -53,7 +53,7 @@ class CommitMessage:
         for currentScope in scopes:
             if currentScope == "":
                 raise CommitFormatError("Empty scope not allowed")
-        
+
         self.m_scopes = scopes
 
         self.m_body = "\n".join(lines[1 : ]) if len(lines) > 1 else ""

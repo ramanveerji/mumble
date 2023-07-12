@@ -41,12 +41,12 @@ def findTranslationFor(source, context, comment, translationRoot):
             for currentMsg in currentCtx.findall("message"):
                 if currentMsg.find("source").text == source:
                     currentComment = ""
-                    if not currentMsg.find("comment") is None:
+                    if currentMsg.find("comment") is not None:
                         currentComment = currentMsg.find("comment").text
 
                     if comment == currentComment:
                         return currentMsg.find("translation").text
-            
+
             # Translation not found
             return ""
 
@@ -92,20 +92,19 @@ def main():
         # Parse the current state of the file
         currentTranslationRoot = parseFile(currentTranslationFile)
 
-        if not "language" in currentTranslationRoot.attrib:
+        if "language" not in currentTranslationRoot.attrib:
             # This is the source translation file that only contains source strings
             continue
 
         language = currentTranslationRoot.attrib["language"]
-        print("Processing \"{}\"...".format(language))
+        print(f'Processing \"{language}\"...')
 
 
         try:
             # Checkout the file in its state in the target branch and parse the state from there
             cmd(["git", "checkout", args.FROM_BRANCH, "--", currentTranslationFile])
-            updatedTranslationRoot = parseFile(currentTranslationFile) 
+            updatedTranslationRoot = parseFile(currentTranslationFile)
         finally:
-            pass
             # Always restore to the current branch's state afterwards
             cmd(["git", "reset", "--", currentTranslationFile])
             cmd(["git", "restore", "--", currentTranslationFile])
@@ -122,12 +121,12 @@ def main():
                 translation = translationElement.text
 
                 comment = ""
-                if not currentMsg.find("comment") is None:
+                if currentMsg.find("comment") is not None:
                     comment = currentMsg.find("comment").text
 
                 newTranslation = findTranslationFor(source, context, comment, updatedTranslationRoot)
 
-                if not newTranslation == "" and translation != newTranslation:
+                if newTranslation != "" and translation != newTranslation:
                     # Overtake new translation
                     translationElement.text = newTranslation
                     translationElement.attrib = {}
@@ -160,7 +159,7 @@ def main():
                 targetFile.write(contents)
 
 
-            print("  -> {} translation(s) changed".format(changedTranslations))
+            print(f"  -> {changedTranslations} translation(s) changed")
 
 
 if __name__ == "__main__":

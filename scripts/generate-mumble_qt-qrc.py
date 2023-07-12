@@ -20,7 +20,7 @@ override_qt = []
 def parseTranslationsConfig(configFile):
     configHandle = open(configFile, "r")
 
-    for currentLine in configHandle.readlines():
+    for currentLine in configHandle:
         currentLine = currentLine.strip()
         # Skip comments and empty lines
         if currentLine.startswith("#") or not currentLine:
@@ -29,27 +29,28 @@ def parseTranslationsConfig(configFile):
         # A config entry is supposed to be in the format <operator> <fileName>
         splitParts = currentLine.split(" ", 1)
         if len(splitParts) != 2:
-            raise RuntimeError("Invalid line in translation config file: %s" % currentLine)
+            raise RuntimeError(f"Invalid line in translation config file: {currentLine}")
 
         operator = splitParts[0].lower().strip()
         translationFileName = splitParts[1].strip()
 
         if not translationFileName:
-            raise RuntimeError("Empty filename in translation config: %s" % currentLine)
+            raise RuntimeError(f"Empty filename in translation config: {currentLine}")
 
         if not translationFileName.endswith(".ts"):
-            raise RuntimeError("Expected translation file to have a '*.ts' name but got %s" % translationFileName)
+            raise RuntimeError(
+                f"Expected translation file to have a '*.ts' name but got {translationFileName}"
+            )
 
         # Replace the trailing .ts with .qm as this is what lrelease will turn it into
-        translationFileName = translationFileName[:-3] + ".qm"
+        translationFileName = f"{translationFileName[:-3]}.qm"
 
         local_qt_translations.append(translationFileName)
 
         if operator == "fallback":
             # fallback files are the default, so no special action has to be taken
             pass
-        # be programmer friendly and allow "override" as well
-        elif operator == "overwrite" or operator == "override":
+        elif operator in ["overwrite", "override"]:
             override_qt.append(translationFileName)
 
 
@@ -89,12 +90,12 @@ def filesToQrc(outFile, processedComponents, fileNames, directoryPath, localTran
             isOverride = True
 
         name, extension = os.path.splitext(currentFileName)
-        if not extension == ".qm":
+        if extension != ".qm":
             continue
 
         component = getComponentName(currentFileName)
 
-        if not component in allowed_components:
+        if component not in allowed_components:
             continue
 
         if name in processedComponents and not isOverride:
@@ -108,7 +109,11 @@ def filesToQrc(outFile, processedComponents, fileNames, directoryPath, localTran
         else:
             # In order to recognize translation-overrides, we have to prefix them
             print("   > Bundling Qt overwrite translation \"{0}\"".format(currentFilePath))
-            outFile.write(' <file alias="{0}">{1}</file>\n'.format("mumble_overwrite_" + currentFileName, currentFilePath))
+            outFile.write(
+                ' <file alias="{0}">{1}</file>\n'.format(
+                    f"mumble_overwrite_{currentFileName}", currentFilePath
+                )
+            )
 
     return processedComponents
 
@@ -129,17 +134,16 @@ def main():
     if os.path.isfile(configFile):
         parseTranslationsConfig(configFile)
 
-    of = open(args.output, 'w')
-    of.write('<!DOCTYPE RCC><RCC version="1.0">\n')
-    of.write('<qresource>\n')
-    processedComponents = []
-    for dirName in args.translation_dir:
-        processedComponents.extend(dirToQrc(of, dirName, processedComponents))
-    # Process translations provided by Mumble itself (aka local translations)
-    filesToQrc(of, processedComponents, local_qt_translations, args.local_translation_dir, True)
-    of.write('</qresource>\n')
-    of.write('</RCC>\n')
-    of.close()
+    with open(args.output, 'w') as of:
+        of.write('<!DOCTYPE RCC><RCC version="1.0">\n')
+        of.write('<qresource>\n')
+        processedComponents = []
+        for dirName in args.translation_dir:
+            processedComponents.extend(dirToQrc(of, dirName, processedComponents))
+        # Process translations provided by Mumble itself (aka local translations)
+        filesToQrc(of, processedComponents, local_qt_translations, args.local_translation_dir, True)
+        of.write('</qresource>\n')
+        of.write('</RCC>\n')
 
 if __name__ == '__main__':
     main()

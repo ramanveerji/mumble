@@ -74,10 +74,18 @@ def formatLicenseVar(var_name: str, license_path: str, define_guard: Optional[st
 
         content = "\"" + re.sub("\\n\\s*", "\\\\n\"\n\t\"", content) + "\""
 
-        content = "static const char *" + var_name + " = " + content + ";"
+        content = f"static const char *{var_name} = {content};"
 
         if define_guard:
-            content = "#ifdef " + define_guard + "\n" + content + "\n" + "#endif // " + define_guard + "\n"
+            content = (
+                f"#ifdef {define_guard}"
+                + "\n"
+                + content
+                + "\n"
+                + "#endif // "
+                + define_guard
+                + "\n"
+            )
 
         return content
 
@@ -108,7 +116,7 @@ struct ThirdPartyLicense {
 	bool isEmpty() const { return !name && !url && !license; }
 };
 """
-    
+
     for currentLicense in licenses:
         content += "\n" + formatLicenseVar(var_name=currentLicense[varNameIdx], license_path=currentLicense[filePathIdx],
                 define_guard=currentLicense[defineGuardIdx] if len(currentLicense) > defineGuardIdx else None)
@@ -119,13 +127,13 @@ struct ThirdPartyLicense {
 
     for currentLicense in licenses[ 1 : ]:
         if len(currentLicense) > defineGuardIdx:
-            content += "#ifdef " + currentLicense[defineGuardIdx] + "\n"
+            content += f"#ifdef {currentLicense[defineGuardIdx]}" + "\n"
 
         content += "\t" + ("ThirdPartyLicense(\"%s\", \"%s\", %s)" % (currentLicense[displayNameIdx], currentLicense[urlIdx],
             currentLicense[varNameIdx])) + ",\n"
 
         if len(currentLicense) > defineGuardIdx:
-            content += "#endif //" + currentLicense[defineGuardIdx] + "\n"
+            content += f"#endif //{currentLicense[defineGuardIdx]}" + "\n"
 
     content += "\t// Empty entry that marks the end of the array\n"
     content += "\tThirdPartyLicense()\n"

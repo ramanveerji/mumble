@@ -39,7 +39,7 @@ def main():
     try:
         subprocess.run([convert_bin, "--help"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     except Exception as e:
-        print("[ERROR]: %s can't be executed: %s" % (convert_bin, e))
+        print(f"[ERROR]: {convert_bin} can't be executed: {e}")
         sys.exit(1)
 
     for current in [args.small_svg, args.regular_svg]:
@@ -61,7 +61,7 @@ def main():
     # Now use the convert CLI utility to combine these PNGs into a .ico file
     subprocess.run([convert_bin, *images, args.output])
 
-    print("Wrote %s" % args.output)
+    print(f"Wrote {args.output}")
 
 
 if __name__ == "__main__":
