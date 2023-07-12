@@ -56,18 +56,14 @@ def extractFields(classDefinition):
         assert len(words) == 2, "Expected remaining lines to be of form <type> <name(s)>"
 
         for currentFieldName in words[1].split(","):
-            currentFieldName = currentFieldName.strip()
-
-            if not currentFieldName:
-                continue
-
-            fields[currentFieldName] = words[0]
+            if currentFieldName := currentFieldName.strip():
+                fields[currentFieldName] = words[0]
 
     return fields
 
 
 def extractClassDefinition(className, contents, classIdentifier = "class"):
-    definition = contents[contents.find(classIdentifier + " " + className) :]
+    definition = contents[contents.find(f"{classIdentifier} {className}"):]
     curlyBrackets = 0
     endIndex = 0
     for c in definition:
@@ -78,12 +74,12 @@ def extractClassDefinition(className, contents, classIdentifier = "class"):
 
             if curlyBrackets == 0:
                 break
-        
+
         endIndex += 1
 
     assert curlyBrackets == 0
 
-    definition = definition[0 : endIndex]
+    definition = definition[:endIndex]
 
     return definition
 
@@ -92,7 +88,7 @@ def getTemplateArguments(templateDef):
     relevantContent = templateDef[templateDef.find("<") + 1 : templateDef.rfind(">")]
 
     # Nested templates not yet supported
-    assert not "<" in relevantContent
+    assert "<" not in relevantContent
 
     args = relevantContent.split(",")
     args = [x.strip() for x in args]
@@ -146,8 +142,6 @@ def getDefaultValueForType(dataType):
         return "QuitBehavior::ALWAYS_QUIT"
     elif dataType in ["OverlayShow"]:
         return "OverlaySettings::HomeChannel"
-    elif dataType in ["OverlayShow"]:
-        return "OverlaySettings::HomeChannel"
     elif dataType in ["OverlaySort"]:
         return "OverlaySettings::LastStateChange"
     elif dataType in ["OverlayExclusionMode"]:
@@ -188,7 +182,7 @@ def getDefaultValueForType(dataType):
 
         string = "{ "
         for _ in range(args[1]):
-            string += getDefaultValueForType(args[0]) + ", "
+            string += f"{getDefaultValueForType(args[0])}, "
 
         if args[1] > 0:
             # remove trailing comma
@@ -202,13 +196,12 @@ def getDefaultValueForType(dataType):
     if dataType in defaultValues:
         return defaultValues[dataType]
 
-    raise RuntimeError("No known default value for type " + dataType)
+    raise RuntimeError(f"No known default value for type {dataType}")
 
 
 
 def generateTestBody(settingsFields, settingsClassName, excludeFields = []):
-    contents = "#include <QObject>\n"
-    contents += "#include <QtTest>\n"
+    contents = "#include <QObject>\n" + "#include <QtTest>\n"
     contents += "#include \"" + settingsClassName + ".h\"\n"
     contents += "#include \"JSONSerialization.h\"\n"
     contents += "#include <nlohmann/json.hpp>\n"
@@ -267,7 +260,7 @@ def generateTestBody(settingsFields, settingsClassName, excludeFields = []):
 def generateDefaultConstruction(structName, fields):
     contents =  structName + "{"
     for currentField in fields:
-        contents += "/*" + currentField + "*/ " + getDefaultValueForType(fields[currentField]) + ","
+        contents += f"/*{currentField}*/ {getDefaultValueForType(fields[currentField])},"
 
     if len(fields) > 0:
         # remove trailing comma

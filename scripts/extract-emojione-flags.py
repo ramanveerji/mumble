@@ -39,18 +39,18 @@ REGIONAL_INDICATOR_SYMBOL_LETTER_A = 0x1F1E6
 REGIONAL_INDICATOR_SYMBOL_LETTER_Z = 0x1F1FF
 
 def is_region(points):
-    for point in points:
-        if point > REGIONAL_INDICATOR_SYMBOL_LETTER_Z \
-                or point < REGIONAL_INDICATOR_SYMBOL_LETTER_A:
-                    return False	
-    return True
+    return not any(
+        point > REGIONAL_INDICATOR_SYMBOL_LETTER_Z
+        or point < REGIONAL_INDICATOR_SYMBOL_LETTER_A
+        for point in points
+    )
 
 
 def region_name(points):
-    name = ''
-    for point in points:
-        name += chr(point - REGIONAL_INDICATOR_SYMBOL_LETTER_A + ord('a'))
-    return name
+    return ''.join(
+        chr(point - REGIONAL_INDICATOR_SYMBOL_LETTER_A + ord('a'))
+        for point in points
+    )
 
 
 def main():
@@ -64,7 +64,7 @@ def main():
     files = os.listdir(args.emojione_svg_dir)
     for fn in files:
         base, ext = os.path.splitext(fn.lower())
-        if not ext == '.svg':
+        if ext != '.svg':
             continue
 
         pointsStr = base.split('-')
@@ -72,7 +72,7 @@ def main():
 
         if is_region(points):
             name = region_name(points)
-            svgName = name + '.svg'
+            svgName = f'{name}.svg'
             shutil.copy(os.path.join(args.emojione_svg_dir, fn),
                     os.path.join(args.dst_dir, svgName))
 

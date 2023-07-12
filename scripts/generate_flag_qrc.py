@@ -36,15 +36,11 @@ def main():
 
     args = parser.parse_args()
 
-    # Get a list of all flag SVGs
-    flags = []
-
-    for fn in sorted(os.listdir(args.flag_dir)):
-        if not fn.lower().endswith('svg'):
-            continue
-        
-        flags.append(fn)
-
+    flags = [
+        fn
+        for fn in sorted(os.listdir(args.flag_dir))
+        if fn.lower().endswith('svg')
+    ]
     output_directory = os.path.dirname(args.output)
 
     # Generate output file.
@@ -54,7 +50,14 @@ def main():
         f.write('<qresource>\n')
 
         for fn in flags:
-            f.write('<file alias="{0}">{1}</file>\n'.format('flags/' + fn, os.path.relpath(os.path.join(args.flag_dir, fn), output_directory)))
+            f.write(
+                '<file alias="{0}">{1}</file>\n'.format(
+                    f'flags/{fn}',
+                    os.path.relpath(
+                        os.path.join(args.flag_dir, fn), output_directory
+                    ),
+                )
+            )
 
         f.write('</qresource>\n')
         f.write('</RCC>\n')

@@ -66,29 +66,23 @@ def generateHeaderForFile(filePath):
     creationDate = datetime.datetime.fromisoformat(creationDateStr.split()[0])
 
     copyright = None
-    if creationDate.year == datetime.datetime.today().year:
+    if creationDate.year == datetime.datetime.now().year:
         copyright = str(creationDate.year)
     else:
-        copyright = str(creationDate.year) + "-" + str(datetime.datetime.today().year)
+        copyright = f"{str(creationDate.year)}-{datetime.datetime.now().year}"
 
     return licenseHeaderTemplate.substitute(commentChar=commentChar, copyright=copyright)
 
 
 def findCopyright(content, pattern):
-    match = re.search(pattern, content)
-    
-    if match:
+    if match := re.search(pattern, content):
         return (match.start(), match.end())
     else:
         raise LicenseNotFoundError()
 
 
 def exclude(path, excludes):
-    for current in excludes:
-        if path.startswith(current):
-            return True
-    
-    return False
+    return any(path.startswith(current) for current in excludes)
 
 
 def main():
@@ -121,7 +115,7 @@ def main():
 
             try:
                 generatedCopyright = generateHeaderForFile(fullPath)
-                
+
                 fileHandle = open(fullPath, "r")
                 fileContent = fileHandle.read()
 
@@ -162,7 +156,7 @@ def main():
             except InvalidFileError:
                 continue
 
-    print("Modified {} files".format(modifiedFiles))
+    print(f"Modified {modifiedFiles} files")
 
 
 if __name__ == "__main__":

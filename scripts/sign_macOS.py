@@ -126,11 +126,17 @@ class Signer:
 			print("Subject_OU:", OU)
 			print("Reqs:", reqs)
 
-			args = ['-vvvv', '--force',
-					'-r=' + reqs,
-					'--identifier', identifier,
-					'--keychain', self.cfg['keychain'],
-					'--sign', self.cfg['developer-id-app']]
+			args = [
+				'-vvvv',
+				'--force',
+				f'-r={reqs}',
+				'--identifier',
+				identifier,
+				'--keychain',
+				self.cfg['keychain'],
+				'--sign',
+				self.cfg['developer-id-app'],
+			]
 
 			if entitlements:
 				args += ['--options', 'runtime',
@@ -201,29 +207,24 @@ class Signer:
 		'''
 		app = os.path.join(workDir, 'content', 'Mumble.app')
 
-		binaries = []
 		binariesDir = os.path.join(app, 'Contents', 'MacOS')
-		for binary in os.listdir(binariesDir):
-			binaries.append(os.path.join(binariesDir, binary))
-
-		codecs = []
+		binaries = [
+			os.path.join(binariesDir, binary) for binary in os.listdir(binariesDir)
+		]
 		codecsDir = os.path.join(app, 'Contents', 'Codecs')
-		for codec in os.listdir(codecsDir):
-			codecs.append(os.path.join(codecsDir, codec))
-
-		plugins = []
+		codecs = [os.path.join(codecsDir, codec) for codec in os.listdir(codecsDir)]
 		pluginsDir = os.path.join(app, 'Contents', 'Plugins')
-		for plugin in os.listdir(pluginsDir):
-			plugins.append(os.path.join(pluginsDir, plugin))
-
+		plugins = [
+			os.path.join(pluginsDir, plugin) for plugin in os.listdir(pluginsDir)
+		]
 		self.codesign(binaries)
 		self.codesign(codecs)
 		self.codesign(plugins)
 
 		overlayInst = os.path.join(app, 'Contents', 'Resources', 'MumbleOverlay.pkg')
-		os.rename(overlayInst, overlayInst + '.intermediate')
-		self.prodsign(overlayInst + '.intermediate', overlayInst)
-		os.remove(overlayInst + '.intermediate')
+		os.rename(overlayInst, f'{overlayInst}.intermediate')
+		self.prodsign(f'{overlayInst}.intermediate', overlayInst)
+		os.remove(f'{overlayInst}.intermediate')
 
 		self.codesign(app, entitlements)
 
@@ -239,13 +240,12 @@ class Signer:
 
 		self.extractPKG(overlayPKG, overlayDir)
 
-		binaries = []
 		binariesDir = os.path.join(overlayDir, 'net.sourceforge.mumble.OverlayScriptingAddition.pkg',
 											   'Payload', 'MumbleOverlay.osax',
 											   'Contents', 'MacOS')
-		for binary in os.listdir(binariesDir):
-			binaries.append(os.path.join(binariesDir, binary))
-
+		binaries = [
+			os.path.join(binariesDir, binary) for binary in os.listdir(binariesDir)
+		]
 		self.codesign(binaries)
 
 		self.makePKG(overlayDir, overlayPKG)
@@ -289,9 +289,9 @@ def main():
 	outFile = os.path.abspath(args.output)
 	workDir = tempfile.mkdtemp()
 
-	print('Input: ' + inFile)
-	print('Output: ' + outFile)
-	print('Working dir: ' + workDir + '\n')
+	print(f'Input: {inFile}')
+	print(f'Output: {outFile}')
+	print(f'Working dir: {workDir}' + '\n')
 
 	if inFile.lower().endswith('.dmg'):
 		volName = signer.extractDMG(inFile, workDir)
@@ -305,17 +305,14 @@ def main():
 	elif inFile.lower().endswith('.pkg'):
 		signer.extractPKG(inFile, workDir)
 
-		files = []
-		for file in os.listdir(workDir):
-			files.append(os.path.join(workDir, file))
-
+		files = [os.path.join(workDir, file) for file in os.listdir(workDir)]
 		signer.codesign(files)
 
 		signer.makePKG(workDir, outFile)
 
-		os.rename(outFile, outFile + '.intermediate')
-		signer.prodsign(outFile + '.intermediate', outFile)
-		os.remove(outFile + '.intermediate')
+		os.rename(outFile, f'{outFile}.intermediate')
+		signer.prodsign(f'{outFile}.intermediate', outFile)
+		os.remove(f'{outFile}.intermediate')
 	else:
 		shutil.copy(inFile, outFile)
 		signer.codesign(outFile)
@@ -326,7 +323,7 @@ def main():
 		shutil.rmtree(workDir, ignore_errors = True)
 		print('Working tree removed\n')
 
-	print('Signed file available at ' + args.output)
+	print(f'Signed file available at {args.output}')
 
 if __name__ == '__main__':
 	main()

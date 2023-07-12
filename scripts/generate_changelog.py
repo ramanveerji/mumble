@@ -41,7 +41,7 @@ def is_merge_commit(commit: str) -> bool:
     """Checks whether the given commit is a merge commit"""
     # See https://stackoverflow.com/a/59425446
     try:
-        cmd(["git", "rev-parse", "{}^2".format(commit)])
+        cmd(["git", "rev-parse", f"{commit}^2"])
         return True
     except:
         return False
@@ -85,7 +85,7 @@ def get_branch_of(ref: str, include_remote_branches: bool = False) -> str:
 
     branches: List[str] = cmd(args).split("\n")
 
-    assert len(branches) > 0, 'Couldn\'t find a branch containing "%s"' % ref
+    assert branches, 'Couldn\'t find a branch containing "%s"' % ref
 
     # remove leading star indicating currently checked out branch
     branches = [x[1:].strip() if x.startswith("*") else x.strip() for x in branches]
@@ -94,9 +94,9 @@ def get_branch_of(ref: str, include_remote_branches: bool = False) -> str:
     def branch_compare(left: str, right: str) -> int:
         if left == right:
             return 0
-        if left in ["master", "main"]:
+        if left in {"master", "main"}:
             return -1
-        if right in ["master", "main"]:
+        if right in {"master", "main"}:
             return +1
 
         left_match = release_branch_pattern.match(left)
@@ -112,10 +112,7 @@ def get_branch_of(ref: str, include_remote_branches: bool = False) -> str:
 
         if left_match:
             return -1
-        if right_match:
-            return +1
-
-        return 0
+        return +1 if right_match else 0
 
     sorted(branches, key=cmp_to_key(branch_compare))
 
@@ -126,7 +123,7 @@ def get_commits_between(from_ref: str, to_ref: str) -> List[str]:
     """Gets a list of commit hashs of commits that lie between the two given references"""
     assert is_ancestor(from_ref, to_ref)
 
-    commits = cmd(["git", "rev-list", "{}..{}".format(from_ref, to_ref)]).split("\n")
+    commits = cmd(["git", "rev-list", f"{from_ref}..{to_ref}"]).split("\n")
 
     commits = [x for x in reversed(commits) if x]
 
@@ -136,7 +133,7 @@ def get_commits_between(from_ref: str, to_ref: str) -> List[str]:
 def get_commits_in_merge(merge_commit: str) -> List[str]:
     """Gets the commits that were introduced by the given merge commit"""
     return (
-        cmd(["git", "rev-list", "{}^1..{}^2".format(merge_commit, merge_commit)])
+        cmd(["git", "rev-list", f"{merge_commit}^1..{merge_commit}^2"])
         .strip()
         .split("\n")
     )
@@ -154,14 +151,14 @@ def get_merge_commit_introducing(commit: str, branch: str) -> Optional[str]:
                 "--merges",
                 "--ancestry-path",
                 "--reverse",
-                "{}..{}".format(commit, branch),
+                f"{commit}..{branch}",
             ]
         )
         .strip()
         .split("\n")
     )
 
-    assert len(candidates) > 0
+    assert candidates
 
     merge_commit: str = candidates[0]
 
@@ -194,17 +191,15 @@ def get_new_commits(
 
 def format_change_line(line: str, pr_number: Optional[int], target_format: str) -> str:
     """Formats a line for a changelog entry according to the given format"""
-    changeline: str = "- " + line
+    changeline: str = f"- {line}"
 
     if pr_number:
         if target_format == "github":
-            changeline += " (#{})".format(str(pr_number))
+            changeline += f" (#{str(pr_number)})"
         elif target_format == "website":
             changeline += " ({{{{< issue {} >}}}})".format(str(pr_number))
         else:
-            changeline += " (https://github.com/mumble-voip/mumble/pull/{})".format(
-                str(pr_number)
-            )
+            changeline += f" (https://github.com/mumble-voip/mumble/pull/{str(pr_number)})"
 
     return changeline
 
@@ -217,9 +212,16 @@ def generate_changelog_from(commits: List[str], branch: str, target_format: str)
     positional_audio_changes: List[str] = []
     misc_changes: List[str] = []
 
-    skipTypes: Set[str] = set(
-        ["FORMAT", "DOCS", "TEST", "MAINT", "CI", "REFAC", "BUILD", "TRANSLATION"]
-    )
+    skipTypes: Set[str] = {
+        "FORMAT",
+        "DOCS",
+        "TEST",
+        "MAINT",
+        "CI",
+        "REFAC",
+        "BUILD",
+        "TRANSLATION",
+    }
 
     for commit_hash in commits:
         if is_merge_commit(commit_hash):
@@ -233,16 +235,10 @@ def generate_changelog_from(commits: List[str], branch: str, target_format: str)
         if merge_commit_hash:
             merge_subject: str = get_subject(merge_commit_hash)
             mod_merge_subject = merge_subject.replace(":", " ")
-            match = pr_number_pattern.search(mod_merge_subject)
-
-            if match:
+            if match := pr_number_pattern.search(mod_merge_subject):
                 pr_number = int(match.group(1))
             else:
-                print(
-                    '[WARNING]: Non-conforming merge commit subject "{}"'.format(
-                        merge_subject
-                    )
-                )
+                print(f'[WARNING]: Non-conforming merge commit subject "{merge_subject}"')
 
         try:
             commit = CommitMessage(get_subject(commit_hash))
@@ -260,15 +256,15 @@ def generate_changelog_from(commits: List[str], branch: str, target_format: str)
                 targetGroups.append(shared_changes)
             if "positional-audio" in commit.m_scopes:
                 targetGroups.append(positional_audio_changes)
-            if "ice" in commit.m_scopes and not "server" in commit.m_scopes:
+            if "ice" in commit.m_scopes and "server" not in commit.m_scopes:
                 targetGroups.append(server_changes)
-                commit.m_summary = "Ice: " + commit.m_summary
-            if "grpc" in commit.m_scopes and not "server" in commit.m_scopes:
+                commit.m_summary = f"Ice: {commit.m_summary}"
+            if "grpc" in commit.m_scopes and "server" not in commit.m_scopes:
                 targetGroups.append(server_changes)
-                commit.m_summary = "gRPC: " + commit.m_summary
-            if "audio" in commit.m_scopes and not "client" in commit.m_scopes:
+                commit.m_summary = f"gRPC: {commit.m_summary}"
+            if "audio" in commit.m_scopes and "client" not in commit.m_scopes:
                 targetGroups.append(client_changes)
-            if len(targetGroups) == 0:
+            if not targetGroups:
                 targetGroups.append(misc_changes)
 
             if "FEAT" in commit.m_types:
@@ -292,24 +288,26 @@ def generate_changelog_from(commits: List[str], branch: str, target_format: str)
             # We can't classify the change -> assume misc
             misc_changes.append(
                 format_change_line(
-                    "Unknown: " + get_subject(commit_hash), pr_number, target_format
+                    f"Unknown: {get_subject(commit_hash)}",
+                    pr_number,
+                    target_format,
                 )
             )
 
     changelog: str = ""
-    if len(client_changes) > 0:
+    if client_changes:
         changelog += "### Client\n\n"
         changelog += "\n".join(sorted(client_changes)) + "\n\n"
 
-    if len(server_changes) > 0:
+    if server_changes:
         changelog += "### Server\n\n"
         changelog += "\n".join(sorted(server_changes)) + "\n\n"
 
-    if len(shared_changes) > 0:
+    if shared_changes:
         changelog += "### Both\n\n"
         changelog += "\n".join(sorted(shared_changes)) + "\n\n"
 
-    if len(positional_audio_changes) > 0:
+    if positional_audio_changes:
         changelog += "### Positional audio plugins\n\n"
         changelog += "\n".join(sorted(positional_audio_changes)) + "\n\n"
 

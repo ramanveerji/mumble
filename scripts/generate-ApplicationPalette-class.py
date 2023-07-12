@@ -73,7 +73,7 @@ def groupname(group):
     return group.lower()
 
 def propname(role, group):
-    return rolename(role) + "_" + groupname(group)
+    return f"{rolename(role)}_{groupname(group)}"
 
 
 def add_role_property(variables, role):
@@ -85,9 +85,14 @@ def add_role_property(variables, role):
     # Build a comparator that checks whether all properties
     # are equal and can be represented as one QBrush.
     all_groups_equal = " && ".join(
-        ['property("%s") == property("%s")' % (propname(role, color_group[0]), propname(role, color_group[i])) for i in
-         range(1, len(color_group))])
-    role_representative = 'qvariant_cast<QBrush>(property("%s"))' % propname(role, color_group[0])
+        [
+            f'property("{propname(role, color_group[0])}") == property("{propname(role, color_group[i])}")'
+            for i in range(1, len(color_group))
+        ]
+    )
+    role_representative = (
+        f'qvariant_cast<QBrush>(property("{propname(role, color_group[0])}"))'
+    )
     role_multisetters = "".join([role_multisetter_template % {"prop": propname(role, group)} for group in color_group])
     variables["getterssetters"] += role_multigettersetter_template % {"role": rolename(role),
                                                                       "comparators": all_groups_equal,
@@ -118,12 +123,14 @@ if __name__ == "__main__":
 
     template = open(args.template, "r").read()
 
-    variables = {"warning": "// Auto-generated from %s . Do not edit manually." % os.path.basename(args.template),
-                 "properties": "",
-                 "propertyresets": "",
-                 "getterssetters": "",
-                 "paletteupdates": "",
-                 "variables": ""}
+    variables = {
+        "warning": f"// Auto-generated from {os.path.basename(args.template)} . Do not edit manually.",
+        "properties": "",
+        "propertyresets": "",
+        "getterssetters": "",
+        "paletteupdates": "",
+        "variables": "",
+    }
 
     for role in color_role:
         add_role_property(variables, role)

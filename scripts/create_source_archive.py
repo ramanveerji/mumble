@@ -80,7 +80,7 @@ def create_tar_archive(
     top_level_dir: str = os.path.basename(archive_name)
     archive_name += ".tar"
     if compression:
-        archive_name += "." + compression
+        archive_name += f".{compression}"
 
     with tarfile.open(
         archive_name, mode="x:" + (compression if compression else "")
@@ -127,11 +127,11 @@ def main() -> None:
     if not remote:
         remote: str = git(["remote", "get-url", args.origin_name])
 
-    archive_name: str = args.name if args.name else "mumble-" + args.revision
+    archive_name: str = args.name if args.name else f"mumble-{args.revision}"
 
     # Clone the repo into a temp directory
     with tempfile.TemporaryDirectory() as tmp_repo:
-        print("Creating temporary clone at '%s'..." % tmp_repo)
+        print(f"Creating temporary clone at '{tmp_repo}'...")
         git(
             [
                 "clone",
@@ -155,9 +155,9 @@ def main() -> None:
         elif args.format == "tar":
             archive_name = create_tar_archive(files, archive_name, rel_to=tmp_repo)
         else:
-            raise RuntimeError("Unsupported archive format '%s'" % args.format)
+            raise RuntimeError(f"Unsupported archive format '{args.format}'")
 
-        print("Archive created at '%s'" % archive_name)
+        print(f"Archive created at '{archive_name}'")
 
 
 if __name__ == "__main__":

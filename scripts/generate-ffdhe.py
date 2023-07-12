@@ -376,7 +376,7 @@ def derLength(size):
         # contains full bytes. If not, prepend
         # a zero byte.
         if len(hexString) % 2 != 0:
-            hexString = '0' + hexString
+            hexString = f'0{hexString}'
 
         # If the computed hexString bignum
         # contains more than 127 bytes, we
@@ -486,10 +486,7 @@ def pem(der, kind='DH PARAMETERS'):
     enc = base64.b64encode(der)
     n = 0
     for ch in enc:
-        if type(ch) == int: # Python 3
-            out += chr(ch)
-        else:
-            out += ch
+        out += chr(ch) if type(ch) == int else ch
         n += 1
         if n == 64:
             out += '\n'
